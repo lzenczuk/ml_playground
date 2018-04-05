@@ -1,0 +1,60 @@
+import os
+import json
+import pprint
+from neo4j.v1 import GraphDatabase
+
+ADD_PAGE_QUERY = """
+MERGE (p:Page {id: $id})
+ON CREATE SET p.description=$desc, p.url=$url, p.up_votes=0, p.down_votes=0
+MERGE (u:User {name: $name})
+ON CREATE SET u.up_votes=0, u.down_votes=0, u.posts=0
+MERGE (u)-[:POST]->(p)
+ON CREATE SET u.posts=u.posts+1
+"""
+
+UP_VOTE_PAGE_QUERY = """
+MERGE (p:Page {id: $id})
+ON CREATE SET p.description=$desc, p.url=$url, p.up_votes=0, p.down_votes=0
+MERGE (u:User {name: $name})
+ON CREATE SET u.up_votes=0, u.down_votes=0, u.posts=0
+MERGE (u)-[:UP_VOTE]->(p)
+ON CREATE SET u.up_votes=u.up_votes+1, p.up_votes=p.up_votes+1
+"""
+
+DOWN_VOTE_PAGE_QUERY = """
+MERGE (p:Page {id: $id})
+ON CREATE SET p.description=$desc, p.url=$url, p.up_votes=0, p.down_votes=0
+MERGE (u:User {name: $name})
+ON CREATE SET u.up_votes=0, u.down_votes=0, u.posts=0
+MERGE (u)-[:DOWN_VOTE]->(p)
+ON CREATE SET u.down_votes=u.down_votes+1, p.down_votes=p.down_votes+1
+"""
+
+
+def add_page(tx, page):
+    tx.run(ADD_PAGE_QUERY, id=page['id'], desc=page['description'], url=page['url'], name=page['author'])
+
+
+def up_vote_page(tx, page_id, page_description, page_url, voter_name):
+    tx.run(UP_VOTE_PAGE_QUERY, id=page_id, desc=page_description, url=page_url, name=voter_name)
+
+
+def down_vote_page(tx, page_id, page_description, page_url, voter_name):
+    tx.run(DOWN_VOTE_PAGE_QUERY, id=page_id, desc=page_description, url=page_url, name=voter_name)
+
+
+driver = GraphDatabase.driver('bolt://localhost:7687', auth=('neo4j', 'Password1'))
+session = driver.session()
+
+for page_id in os.listdir('out'):
+    page = json.load(open('out/' + page_id + '/' + page_id + '_data.json'))
+    pprint.pprint(page)
+    print "-----------------------------------"
+    # session.write_transaction(add_page, page)
+
+    for up_vote in page['up_voters']:
+        session.write_transaction(up_vote_page, page['id'], page['description'], page['url'], up_vote['user'])
+
+    print "==================================="
+
+driver.close()
