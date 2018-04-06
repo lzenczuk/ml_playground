@@ -1,9 +1,8 @@
-from bs4 import BeautifulSoup
-from bs4 import NavigableString
-import pprint
+import json
 import os
 
-import json
+from bs4 import BeautifulSoup
+from bs4 import NavigableString
 
 
 def _select_one(tag, select_string, index):
@@ -408,9 +407,13 @@ def save_result_dict(page_dir, dict):
     mf.close()
 
 
+number_of_pages = len(os.listdir('out'))
+counter = 0
+
 for page_dir in os.listdir('out'):
+    print "Page %d of %d -> %s" % (counter, number_of_pages, page_dir)
     main_dict = parse_all_page_files(page_dir)
     save_result_dict(page_dir, main_dict)
-
+    counter = counter + 1
 
 # save_result_dict('3953283', parse_all_page_files('3953283'))

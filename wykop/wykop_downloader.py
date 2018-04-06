@@ -118,12 +118,11 @@ def save_txt_to_file(page_id, file_name, content):
 
 
 def create_page_folder(page_id):
-    os.mkdir('out/'+str(page_id))
+    os.mkdir('out/' + str(page_id))
 
 
 def fetch_all_raw_page_data(page_id):
-
-    print 'Fetching page: '+str(page_id)
+    print 'Fetching page: ' + str(page_id)
     main_page = fetch_wykop_page(page_id)
 
     if main_page['exists']:
@@ -131,7 +130,7 @@ def fetch_all_raw_page_data(page_id):
         create_page_folder(page_id)
 
         # real url of the page
-        save_txt_to_file(page_id, str(page_id) + "_info.txt", str(page_id)+' '+main_page['url'])
+        save_txt_to_file(page_id, str(page_id) + "_info.txt", str(page_id) + ' ' + main_page['url'])
 
         # page content
         save_txt_to_file(page_id, str(page_id) + "_main.html", main_page['body'])
@@ -154,15 +153,16 @@ def fetch_all_raw_page_data(page_id):
 
         # all comments
         comment_pages = number_of_comment_pages(main_page['body'])
-        for cpn in range(2, comment_pages+1):
-            print 'Fetching comments page number :'+str(cpn)+' on page: ' + str(page_id)
+        for cpn in range(2, comment_pages + 1):
+            print 'Fetching comments page number :' + str(cpn) + ' on page: ' + str(page_id)
             cp = fetch_comment_page(main_page['url'], cpn)
             if cp['exists']:
-                save_txt_to_file(page_id, str(page_id) + "_comments_"+str(cpn)+".html", cp['body'])
+                save_txt_to_file(page_id, str(page_id) + "_comments_" + str(cpn) + ".html", cp['body'])
             else:
                 save_txt_to_file(page_id, str(page_id) + "_comments_" + str(cpn) + "_error.txt", cp['error'])
     else:
-        print 'Page: ' + str(page_id)+' not exists'
+        print 'Page: ' + str(page_id) + ' not exists'
+
 
 # 1 comment, no pages: 3953285
 # 16 pages of comments: 3953283
@@ -170,7 +170,14 @@ def fetch_all_raw_page_data(page_id):
 
 # fetch_all_raw_page_data(3953283)
 
-for i in range(3953283, 3953365):
+max_page_id = 4250177
+
+# Break to prevent download to much data
+lkjhkhkhk
+
+# 1000 from max
+# for i in range(4250177 -100, 4250177):
+for i in range(4250177 - 900, 4250177 - 100):
     fetch_all_raw_page_data(i)
 
-#print os.listdir('out')
+# print os.listdir('out')

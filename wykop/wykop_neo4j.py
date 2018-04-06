@@ -78,8 +78,12 @@ def add_page_to_db(page):
         session.write_transaction(add_tag_to_page, page['id'], page['description'], page['url'], tag)
 
 
+number_of_pages = len(os.listdir('out'))
+counter = 0
+
 for page_id in os.listdir('out'):
     page = json.load(open('out/' + page_id + '/' + page_id + '_data.json'))
+    print "Page %d of %d -> %s" % (counter, number_of_pages, page_id)
     pprint.pprint(page)
     print "-----------------------------------"
     add_page_to_db(page)
