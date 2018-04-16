@@ -240,9 +240,13 @@ class WykopVote:
 
         return u
 
+    def vote_time(self):
+        return _select_attr(self._vote_div, 'span.info time', 0, 'datetime')
+
     def to_dict(self):
         return {
             'user': self.user(),
+            'vote_time': self.vote_time()
         }
 
 
