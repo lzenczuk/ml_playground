@@ -2,5 +2,6 @@
 
 .idea/
 wykop/out/
-
+wykop/wykop.graphml
+wykop/wykop_cyt.graphml
 

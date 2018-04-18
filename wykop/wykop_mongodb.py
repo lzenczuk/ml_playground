@@ -136,3 +136,33 @@ for page in pages.aggregate([
 ]):
     pprint.pprint(page)
 """
+
+# pages up voted by user
+#pprint.pprint(list(pages.find({'up_voters': {'$elemMatch': {'user': 'pentan1'}}})))
+
+# poroniony_ Qp017
+
+# pages posted by user
+#pprint.pprint(list(pages.find({'author': 'pentan1'})))
+#pprint.pprint(list(pages.find({'author': 'Qp017'}, {"id": 1, "up_votes": 1, "down_votes": 1, "description": 1})))
+#pprint.pprint(list(pages.find({'author': 'poroniony_'}, {"id": 1, "up_votes": 1, "down_votes": 1, "description": 1})))
+
+# page
+#pprint.pprint(list(pages.find({"id": "3953765"}))[0])
+
+# Up and down votes statistics
+"""
+pprint.pprint(list(pages.aggregate([
+    {"$group": {
+        "_id": "null",
+        "max_down_votes": {"$max": "$down_votes"},
+        "avg_down_votes": {"$avg": "$down_votes"},
+        "std_down_votes": {"$stdDevSamp": "$down_votes"},
+        "max_up_votes": {"$max": "$up_votes"},
+        "avg_up_votes": {"$avg": "$up_votes"},
+        "std_up_votes": {"$stdDevSamp": "$up_votes"},
+    }}
+]))[0])
+"""
+
+#pprint.pprint(list(pages.find({"$and": [{'down_votes': {'$gt': 27}}, {"up_votes": {"$lt": 10}}]}, {"id": 1, "up_votes": 1, "down_votes": 1, "description": 1})))
