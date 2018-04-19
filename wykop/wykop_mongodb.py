@@ -166,3 +166,72 @@ pprint.pprint(list(pages.aggregate([
 """
 
 #pprint.pprint(list(pages.find({"$and": [{'down_votes': {'$gt': 27}}, {"up_votes": {"$lt": 10}}]}, {"id": 1, "up_votes": 1, "down_votes": 1, "description": 1})))
+
+"""
+# all tags list
+for page in pages.distinct('keys'):
+    pprint.pprint(page)
+"""
+
+"""
+# votes per tag
+for page in pages.aggregate([
+    {"$project": {"k": "$keys", "u": "$up_voters"}},
+    {"$unwind": {"path": "$k"}},
+    {"$unwind": {"path": "$u"}},
+    {"$group": {"_id": {"user": "$u.user", "key": "$k"}, "counter": {"$sum": 1}}},
+    {"$group": {"_id": "$_id.user", "keys": {"$push": {"key": "$_id.key", "count": "$counter"}}}},
+]):
+    pprint.pprint(page)
+"""
+
+"""
+# votes per tag
+for page in pages.aggregate([
+    {"$project": {"id": "$id", "d": "$description"}},
+]):
+    pprint.pprint(page)
+"""
+
+# pages taged with key
+pages_id = []
+for p in list(pages.find({'keys': '4konserwy'}, {"id": 1, "description": 1})):
+    pages_id.append(p['id'])
+
+
+# find authors of pages
+#pprint.pprint(list(pages.find({"id": {"$in": pages_id}}, {"id": 1, "author": 1})))
+
+print "POST -------------------------------------------------------"
+
+# authors of pages
+for page in pages.aggregate([
+    {'$match': {"id": {"$in": pages_id}}},
+    {'$group': {"_id": "$author", "count": {"$sum": 1}}},
+    {'$sort': {"count": -1}},
+]):
+    pprint.pprint(page)
+
+print "UP-----------------------------------------------------------"
+
+# up voters of pages
+for page in pages.aggregate([
+    {'$match': {"id": {"$in": pages_id}}},
+    {'$unwind': {"path": "$up_voters"}},
+    {'$project': {'user': "$up_voters.user"}},
+    {'$group': {"_id": "$user", "count": {"$sum": 1}}},
+    {'$sort': {"count": -1}},
+]):
+    pprint.pprint(page)
+
+print "DOWN---------------------------------------------------------"
+
+# down voters of pages
+for page in pages.aggregate([
+    {'$match': {"id": {"$in": pages_id}}},
+    {'$unwind': {"path": "$down_voters"}},
+    {'$project': {'user': "$down_voters.user"}},
+    {'$group': {"_id": "$user", "count": {"$sum": 1}}},
+    {'$sort': {"count": -1}},
+]):
+    pprint.pprint(page)
