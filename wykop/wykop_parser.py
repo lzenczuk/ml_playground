@@ -72,6 +72,20 @@ def _extract_text(tag):
     return text
 
 
+def format_datetime(dt_str):
+    if dt_str is None:
+        return None
+
+    # Remove last ':' from date to match UTC format
+    # 2017-10-06T13:40:52+02:00 -> 2017-10-06T13:40:52+0200
+
+    da = dt_str.split(':')
+    ds = ":".join(da[0:-1])
+    ds = ds+da[-1]
+
+    return ds
+
+
 class WykopPage:
     """
     Class representing data on wykop page.
@@ -123,7 +137,7 @@ class WykopPage:
         if u.startswith("https"):
             url_prefix_len = len("https://www.wykop.pl/link/")
 
-        return u[url_prefix_len:].split('/')[0]
+        return long(u[url_prefix_len:].split('/')[0])
 
     def url(self):
         return _select_attr(self._page_, 'meta[property="og:url"]', 0, 'content')
@@ -145,7 +159,7 @@ class WykopPage:
         return _select_attr(self._page_, 'div.fix-tagline span a.affect', 0, 'href')
 
     def add_time(self):
-        return _select_attr(self._page_, 'div.information b time', 0, 'datetime')
+        return format_datetime(_select_attr(self._page_, 'div.information b time', 0, 'datetime'))
 
     def display(self):
         ds = _select_one(self._infoPanel_, 'tr.infopanel td b', 2)
@@ -241,7 +255,7 @@ class WykopVote:
         return u
 
     def vote_time(self):
-        return _select_attr(self._vote_div, 'span.info time', 0, 'datetime')
+        return format_datetime(_select_attr(self._vote_div, 'span.info time', 0, 'datetime'))
 
     def to_dict(self):
         return {
@@ -316,7 +330,7 @@ class WykopComment:
         return _select_attr_lambda(self._comment_div_tag_, 'a.profile', 0, 'href', lambda s: s.split('/')[-2])
 
     def add_time(self):
-        return _select_attr(self._comment_div_tag_, 'div.author time', 0, 'datetime')
+        return format_datetime(_select_attr(self._comment_div_tag_, 'div.author time', 0, 'datetime'))
 
     def up_votes(self):
         up = _select_attr(self._comment_div_tag_, 'div.author p.vC', 0, 'data-vcp')

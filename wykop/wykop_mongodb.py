@@ -6,7 +6,7 @@ import json
 client = MongoClient()
 db = client.wykop
 pages = db.pages
-
+users = db.users
 
 # insert
 number_of_pages = len(os.listdir('out'))
@@ -22,6 +22,44 @@ for page_id in os.listdir('out'):
     result = pages.insert_one(page)
     print result.inserted_id
     print "==================================="
+
+###########################################################
+# Converting pages into user documents ####################
+###########################################################
+
+def add_field_to_user(user_id, field_name, value):
+    user = users.find_one({"_id": user_id})
+    if user is None:
+        user = {"_id": user_id}
+        users.insert_one(user)
+
+    users.update_one({"_id": user['_id']}, {"$set": {field_name: value}})
+
+
+# Pages posted by user
+for posted in pages.aggregate([
+    {"$group": {"_id": "$author", "posted_pages": {"$push": "$_id"}}},
+]):
+    add_field_to_user(posted['_id'], 'posted_pages', posted['posted_pages'])
+
+
+# Pages up_voted by user
+for upv in pages.aggregate([
+    {"$project": {"_id": "$_id", "up_voters": "$up_voters"}},
+    {"$unwind": {"path": "$up_voters"}},
+    {"$group": {"_id": "$up_voters.user", "up_voted_pages": {"$push": "$_id"}}},
+]):
+    add_field_to_user(upv['_id'], 'up_voted', upv['up_voted_pages'])
+
+
+# Pages down_voted by user
+for dov in pages.aggregate([
+    {"$project": {"_id": "$_id", "down_voters": "$down_voters"}},
+    {"$unwind": {"path": "$down_voters"}},
+    {"$group": {"_id": "$down_voters.user", "down_voted_pages": {"$push": "$_id"}}},
+]):
+    add_field_to_user(dov['_id'], 'down_voted', dov['down_voted_pages'])
+
 
 
 """
@@ -129,28 +167,29 @@ for page in pages.aggregate([
 """
 # page's comments
 for page in pages.aggregate([
-    {"$project": {"id": "$id", "d": "$discussions"}},
+    {"$project": {"_id": "$_id", "d": "$discussions"}},
     {"$unwind": {"path": "$d"}},
-    {"$project": {"page_id": "$id", "c": {"$setUnion": [["$d.main"], "$d.responses"]}}},
+    {"$project": {"_id": "$_id", "c": {"$setUnion": [["$d.main"], "$d.responses"]}}},
     {"$unwind": {"path": "$c"}},
-    {"$group": {"_id": "$page_id", "comments": {"$push": "$c"}}},
-    {"$project": {"_id": "$_id.page_id", "comments": "$comments"}},
+    {"$group": {"_id": "$_id", "comments": {"$push": "$c"}}},
+    {"$project": {"_id": "$_id", "comments": "$comments"}},
+    {"$out": "page_comments"},
 ]):
     pprint.pprint(page)
 """
 
 # pages up voted by user
-#pprint.pprint(list(pages.find({'up_voters': {'$elemMatch': {'user': 'pentan1'}}})))
+# pprint.pprint(list(pages.find({'up_voters': {'$elemMatch': {'user': 'pentan1'}}})))
 
 # poroniony_ Qp017
 
 # pages posted by user
-#pprint.pprint(list(pages.find({'author': 'pentan1'})))
-#pprint.pprint(list(pages.find({'author': 'Qp017'}, {"id": 1, "up_votes": 1, "down_votes": 1, "description": 1})))
-#pprint.pprint(list(pages.find({'author': 'poroniony_'}, {"id": 1, "up_votes": 1, "down_votes": 1, "description": 1})))
+# pprint.pprint(list(pages.find({'author': 'pentan1'})))
+# pprint.pprint(list(pages.find({'author': 'Qp017'}, {"id": 1, "up_votes": 1, "down_votes": 1, "description": 1})))
+# pprint.pprint(list(pages.find({'author': 'poroniony_'}, {"id": 1, "up_votes": 1, "down_votes": 1, "description": 1})))
 
 # page
-#pprint.pprint(list(pages.find({"id": "3953765"}))[0])
+# pprint.pprint(list(pages.find({"id": "3953765"}))[0])
 
 # Up and down votes statistics
 """
@@ -167,7 +206,7 @@ pprint.pprint(list(pages.aggregate([
 ]))[0])
 """
 
-#pprint.pprint(list(pages.find({"$and": [{'down_votes': {'$gt': 27}}, {"up_votes": {"$lt": 10}}]}, {"id": 1, "up_votes": 1, "down_votes": 1, "description": 1})))
+# pprint.pprint(list(pages.find({"$and": [{'down_votes': {'$gt': 27}}, {"up_votes": {"$lt": 10}}]}, {"id": 1, "up_votes": 1, "down_votes": 1, "description": 1})))
 
 """
 # all tags list
@@ -203,7 +242,7 @@ for p in list(pages.find({'keys': '4konserwy'}, {"id": 1, "description": 1})):
 """
 
 # find authors of pages
-#pprint.pprint(list(pages.find({"id": {"$in": pages_id}}, {"id": 1, "author": 1})))
+# pprint.pprint(list(pages.find({"id": {"$in": pages_id}}, {"id": 1, "author": 1})))
 
 """
 print "POST -------------------------------------------------------"
