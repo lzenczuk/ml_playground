@@ -113,7 +113,7 @@ class WykopPage:
 
         self._infoPanel_ = _select_one(self._rightPanelTag_, "div.information", 0)
 
-    def id(self):
+    def page_id(self):
         u = self.url()
         if u is None:
             return None
@@ -189,7 +189,7 @@ class WykopPage:
 
     def to_dict(self):
         return {
-            'id': self.id(),
+            'page_id': self.page_id(),
             'url': self.url(),
             'author': self.author(),
             'annotation': self.annotation(),
@@ -308,7 +308,7 @@ class WykopComment:
 
         self._comment_div_tag_ = comment_div_tag
 
-    def id(self):
+    def comment_id(self):
         did = _attr(self._comment_div_tag_, 'data-id')
         return did
 
@@ -344,7 +344,7 @@ class WykopComment:
 
     def to_dict(self):
         return {
-            'id': self.id(),
+            'comment_id': self.comment_id(),
             'author': self.author(),
             'add_time': self.add_time(),
             'votes': self.votes(),

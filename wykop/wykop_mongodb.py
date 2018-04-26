@@ -7,20 +7,22 @@ client = MongoClient()
 db = client.wykop
 pages = db.pages
 
-"""
+
 # insert
 number_of_pages = len(os.listdir('out'))
 counter = 0
 
 for page_id in os.listdir('out'):
     page = json.load(open('out/' + page_id + '/' + page_id + '_data.json'))
+    page['_id'] = page['page_id']
+    del page['page_id']
     print "Page %d of %d -> %s" % (counter, number_of_pages, page_id)
     pprint.pprint(page)
     print "-----------------------------------"
     result = pages.insert_one(page)
     print result.inserted_id
     print "==================================="
-"""
+
 
 """
 # get all pages
@@ -193,15 +195,17 @@ for page in pages.aggregate([
     pprint.pprint(page)
 """
 
+"""
 # pages taged with key
 pages_id = []
 for p in list(pages.find({'keys': '4konserwy'}, {"id": 1, "description": 1})):
     pages_id.append(p['id'])
-
+"""
 
 # find authors of pages
 #pprint.pprint(list(pages.find({"id": {"$in": pages_id}}, {"id": 1, "author": 1})))
 
+"""
 print "POST -------------------------------------------------------"
 
 # authors of pages
@@ -235,3 +239,4 @@ for page in pages.aggregate([
     {'$sort': {"count": -1}},
 ]):
     pprint.pprint(page)
+"""
