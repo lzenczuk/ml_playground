@@ -139,6 +139,13 @@ class WykopPage:
 
         return long(u[url_prefix_len:].split('/')[0])
 
+    def title(self):
+        t = _select_one(self._contentPanelTag_, "h2 > a", 0)
+        if t is None:
+            return None
+
+        return t.string
+
     def url(self):
         return _select_attr(self._page_, 'meta[property="og:url"]', 0, 'content')
 
@@ -204,6 +211,7 @@ class WykopPage:
     def to_dict(self):
         return {
             'page_id': self.page_id(),
+            'title': self.title(),
             'url': self.url(),
             'author': self.author(),
             'annotation': self.annotation(),
