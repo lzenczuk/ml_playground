@@ -49,7 +49,7 @@ def fetch_first_page():
 
 
 def fetch_next_page(page_num):
-    url = "https://www.expatrentals.eu/country/netherlands/amsterdam?streetName=Center&pagenum=2"+str(page_num)
+    url = "https://www.expatrentals.eu/country/netherlands/amsterdam?streetName=Center&pagenum="+str(page_num)
     headers = {'Referer': main_url}
     r = requests.get(url, allow_redirects=False, headers=headers)
     if r.status_code == 200:
